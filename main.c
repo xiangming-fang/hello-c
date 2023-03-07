@@ -1,6 +1,7 @@
 // 预处理器指令，告诉 C 编译器在实际编译之前要包含 stdio.h 文件
 #include <stdio.h>
 #include <float.h>
+#include "string.h"
 
 // 定义常量
 //    在 C 中，有两种简单的定义常量的方式：
@@ -89,6 +90,35 @@ enum MONTH{
 };
 
 enum MONTH month;
+
+
+int max(int x,int y){
+    return x > y ? x : y;
+}
+
+int maxThree(int x,int y,int z,int (*p)(int,int)){
+    return (p(x,y),z);
+}
+
+struct SIMPLE
+{
+    int as;
+    char bs;
+    double cs;
+};
+
+// 打印simple 这个结构体变量的值
+void printSimple(struct SIMPLE t){
+    printf("%d %c %f\n",t.as,t.bs,t.cs);
+}
+
+struct
+{
+    // 用三位表示范围是：000 —— 111，十进制就是 0 - 7
+    unsigned int age : 3;
+} Age;
+
+
 
 // 主函数，程序从这里开始执行
 int main() {
@@ -245,7 +275,169 @@ int main() {
     printf("空指针 point 的地址是 %p\n",point);
 
 
+//    函数指针是指向函数的指针变量。
+//
+//    通常我们说的指针变量是指向一个整型、字符型或数组等变量，而函数指针是指向函数。
+//
+//    函数指针可以像一般函数一样，用于调用函数、传递参数。
+
+//    函数指针, *p 一定要打括号
+    int (*p)(int,int) = max;
+    // 这用法是不是太变态了？？？我直接调用max() 不就好了吗？这不是相当于给方法名重命名吗？？？
+    printf("3,4的最大值是 %d\n",p(3,4));
+
+    // 函数指针作为某个函数的参数。 ==》 是真的秀啊，这种写法
+    // 一个函数作为另一个函数的入参 six
+    printf("回调函数测试：7，8，9 最大值 = %d\n",maxThree(7,8,9,p));
+
+    char apple[] = {'a','p','p'};
+    printf("%s\n",apple);
+    printf("%d\n", strlen(apple));
+
+    // 结构体
+    // 结构体定义由关键字 struct 和结构体名组成，结构体名可以根据需要自行定义。
+    struct Books{
+        int ab;
+        char bb;
+        double cb;
+    } book;
+
+    //此声明声明了拥有3个成员的结构体，分别为整型的a，字符型的b和双精度的c
+    //结构体的标签被命名为SIMPLE,没有声明变量
+    // 结构体就是java中的普通类呀
+
+    struct SIMPLE t1,t2,t3;
+    struct Books b1,b2[20],b3;
+    for (int k = 0; k < 20; ++k) {
+        // 都是默认值
+        printf("%d %c %f\n",b2[k].ab,b2[k].bb,b2[k].cb);
+    }
+
+    // 结构体变量的定义初始化
+    struct SIMPLE t = {1,'f',0.00009};
+    printSimple(t);
+    // 结构指针
+    struct SIMPLE *sp = &t;
+    // 结构指针获取对应结构对象里的属性值 用 ->
+    printf("%d ",sp->as);
+
+    // 共用体是一种特殊的数据类型，允许您在相同的内存位置存储不同的数据类型。 ==> 这又是什么骚操作，同一个内存地址存储不同的数据类型？？？
+    // 为了定义共用体，您必须使用 union 语句，方式与定义结构类似。
+    union Data
+    {
+        int i;
+        float f;
+        char  str[20];
+    } data;
+    // Data 类型的变量可以存储一个整数、一个浮点数，或者一个字符串。这意味着一个变量（相同的内存位置）可以存储多个多种类型的数据。
+    // 你是真的秀，原来是这个意思……，既然这么说的话，应该里面的成员变量只能存在一个有值，多个的话就是结构体了呀，就不是共用体了???
+    // 共用体占用的内存应足够存储共用体中最大的成员。例如，在上面的实例中，Data 将占用 20 个字节的内存空间，因为在各个成员中，字符串所占用的空间是最大的。下面的实例将显示上面的共用体占用的总内存大小：
+
+    printf("Memory size occupied by data : %d\n", sizeof(data));
+    data.i = 10;
+    data.f = 220.5;
+    strcpy(data.str,"java");
+    printf( "data.i : %d\n", data.i);
+    printf( "data.f : %f\n", data.f);
+    printf( "data.str : %s\n", data.str);
+    // 卧槽？？？你管这个叫共用体？我的老哥，你这个和结构体没区别呀。
+
+    // 位域：如果您在结构内使用这样的变量，您可以定义变量的宽度来告诉编译器，您将只使用这些字节
+    // 带有预定义宽度的变量被称为位域。
+    struct bs{
+        int a:8;
+        int b:2;
+        int c:6;
+    } bitarea;
+    // bitarea 为 bs 变量，共占两个字节。其中位域 a 占 8 位，位域 b 占 2 位，位域 c 占 6 位。
+
+    Age.age = 4;
+    printf( "Sizeof( Age ) : %d\n", sizeof(Age) );
+    printf( "Age.age : %d\n", Age.age );
+
+    Age.age = 7;
+    printf( "Age.age : %d\n", Age.age );
+
+    Age.age = 8; // 二进制表示为 1000 有四位，超出
+    printf( "Age.age : %d\n", Age.age );
+
+
+    // 在这个位域定义中，a 占第一字节的 4 位，后 4 位填 0 表示不使用，b 从第二字节开始，占用 4 位，c 占用 4 位。
+    struct bbs{
+        unsigned a:4;
+        unsigned  :4;    /* 空域 */
+        unsigned b:4;    /* 从下一单元开始存放 */
+        unsigned c:4
+    };
+
+    // C 语言提供了 typedef 关键字，您可以使用它来为类型取一个新的名字。
+    // 为无符号整型取一个 uint别名
+    typedef unsigned int uint;
+
+    uint aaa = 555;
+    printf("%d\n",aaa);
+
+//    typedef vs #define
+//
+//    #define 是 C 指令，用于为各种数据类型定义别名，与 typedef 类似，但是它们有以下几点不同：
+//
+//    typedef 仅限于为类型定义符号名称，#define 不仅可以为类型定义别名，也能为数值定义别名，比如您可以定义 1 为 ONE。
+//    typedef 是由编译器执行解释的，#define 语句是由预编译器进行处理的。
+
+// 输入输出
+//    float f;
+//    printf("请输入一个浮点数：");
+//    scanf("%f",&f);
+//    printf("输入的是这个 ==》 %f",f);
+
+// int getchar(void) 函数从屏幕读取下一个可用的字符，并把它返回为一个整数。这个函数在同一个时间内只会读取一个单一的字符。您可以在循环内使用这个方法，以便从屏幕上读取多个字符。
+
+// int putchar(int c) 函数把字符输出到屏幕上，并返回相同的字符。这个函数在同一个时间内只会输出一个单一的字符。您可以在循环内使用这个方法，以便在屏幕上输出多个字符。
+
+//    char chars[10] = {};
+//    printf( "Enter a value :");
+//    for (int k = 0; k < 10; ++k) {
+//        chars[k] = getchar( );
+//    }
+//    printf( "You entered: ");
+//    for (int k = 0; k < 10; ++k) {
+//        putchar(chars[k]);
+//    }
+//    printf( "\n");
+
+//    char *gets(char *s) 函数从 stdin 读取一行到 s 所指向的缓冲区，直到一个终止符或 EOF。
+//
+//    int puts(const char *s) 函数把字符串 s 和一个尾随的换行符写入到 stdout。
+
+//    char str[100];
+//
+//    printf( "Enter a value :");
+//    gets( str );
+//
+//    printf( "\nYou entered: ");
+//    puts( str );
+
+//    int scanf(const char *format, ...) 函数从标准输入流 stdin 读取输入，并根据提供的 format 来浏览输入。
+//
+//    int printf(const char *format, ...) 函数把输出写入到标准输出流 stdout ，并根据提供的格式产生输出。
+//
+//    format 可以是一个简单的常量字符串，但是您可以分别指定 %s、%d、%c、%f 等来输出或读取字符串、整数、字符或浮点数。
+
+    // str 本身就是引用
+//    char str[100];
+//    int ii;
+//
+//    printf( "Enter a value :");
+//    scanf("%s %d", str, &ii);
+//
+//    printf( "\nYou entered: %s %d ", str, ii);
+//    printf("\n");
+
+
+
 
     // 终止 main() 函数，并返回值 0
     return 0;
 }
+
+

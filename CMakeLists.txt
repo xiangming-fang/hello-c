@@ -3,4 +3,4 @@ project(hello-c C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(c main.c addtwonum.c)
+add_executable(hello-c main.c addtwonum.c)
